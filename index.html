@@ -40,7 +40,7 @@
           <div class="panel metric"><div class="label">전체 데이터 수</div><div class="value" id="count-value">—</div><div class="hint">유효한 데이터 행</div></div>
           <div class="panel metric"><div class="label">환경 변수</div><div class="value">3</div><div class="hint">온도 · 습도 · 조도(밝기)</div></div>
           <div class="panel metric"><div class="label">시연 알고리즘</div><div class="value" style="font-size:18px;margin:14px 0">Linear Regression</div><div class="hint">다중선형회귀</div></div>
-          <div class="panel metric"><div class="label">브라우저 모델 R²</div><div class="value" id="r2-value">—</div><div class="hint">실제 측정 데이터로 계산</div></div>
+          <div class="panel metric"><div class="label">별도 평가 결과 R²</div><div class="value" id="r2-value">0.941</div><div class="hint">제공된 평가 지표</div></div>
         </div>
         <div class="uploadzone" id="upload-zone"><div><h3>그린나래 실측 데이터 자동 연결</h3><p>팀이 측정한 실제 데이터 8,413행에서 균등 간격으로 추출한 1,048행을 불러와 분석합니다.<br>웹사이트에 접속하면 자동 연결되어 CSV 업로드 없이 이용할 수 있습니다.</p></div><div class="buttonrow"><span class="selectunit">전압 단위: V</span></div></div>
         <p class="privacy">※ 분석 대상은 실제 측정 자료 중 균등 간격으로 추출한 1,048행입니다. 전체 원본 8,413행은 별도 보존합니다. 전압은 V(볼트)로 표시하며, 조도 단위는 측정 장치에서 확인해야 합니다.</p>
@@ -67,10 +67,18 @@
         </div>
       </section>
       <section id="model" class="view" aria-label="모델 구조">
-        <div class="pagehead"><h2>모델 분석</h2><p>브라우저 기반 다중선형회귀의 계수와 홀드아웃 평가 지표를 공개합니다. Orange3에서 별도로 실행한 결과와 혼동하지 마세요.</p></div>
+        <div class="pagehead"><h2>모델 분석</h2><p>제공된 별도 평가 지표와 브라우저 기반 다중선형회귀식을 구분하여 표시합니다.</p></div>
         <div id="model-empty" class="empty">실측 데이터 자동 연결 및 모델 학습 중입니다. 잠시 후 다시 확인하세요.</div>
         <div id="model-filled" class="hidden">
-          <div class="grid grid3"><div class="panel metric"><div class="label">R² 결정계수</div><div class="value" id="metric-r2">—</div><div class="hint">1에 가까울수록 좋은 적합도(음수도 가능)</div></div><div class="panel metric"><div class="label">MAE 평균절대오차</div><div class="value" id="metric-mae">—</div><div class="hint">출력 전압과 동일 단위</div></div><div class="panel metric"><div class="label">RMSE 평균제곱근오차</div><div class="value" id="metric-rmse">—</div><div class="hint">큰 오차에 더 민감</div></div></div>
+          <div class="model-info" style="margin:0 0 13px">별도 평가 결과 · 제공값 (앱 자체 재계산 결과 아님)</div>
+          <div class="grid grid3">
+            <div class="panel metric"><div class="label">MSE 평균제곱오차</div><div class="value">0.006</div><div class="hint">단위: V²</div></div>
+            <div class="panel metric"><div class="label">RMSE 평균제곱근오차</div><div class="value">0.076</div><div class="hint">단위: V</div></div>
+            <div class="panel metric"><div class="label">MAPE 평균절대백분율오차</div><div class="value">0.833</div><div class="hint">제공된 수치</div></div>
+            <div class="panel metric"><div class="label">sMAPE 대칭 평균절대백분율오차</div><div class="value">0.833</div><div class="hint">제공된 수치</div></div>
+            <div class="panel metric"><div class="label">R² 결정계수</div><div class="value">0.941</div><div class="hint">1에 가까울수록 좋은 적합도</div></div>
+          </div>
+          <p class="model-info" style="margin:11px 0 0">※ 위 5개 값은 별도 제공된 평가 지표입니다. 현재 웹앱의 1,048행 학습·검증 계산값과 다를 수 있으며, MAPE·sMAPE의 백분율 표기 방식은 원 분석 결과와 대조가 필요합니다.</p>
           <div class="panel" style="margin-top:17px"><h3 class="sectiontitle">다중선형회귀식</h3><p id="split-note" class="model-info"></p><div id="equation" class="equation"></div><p class="model-info">※ 앱에서 난수 시드 42를 사용하여 데이터를 한 번 섞은 뒤 80% 학습 / 20% 평가로 분할합니다. 동일 데이터의 시간 순서에 따른 예측 성능, 다른 학교에 대한 일반화 성능 또는 Orange3 성능을 직접 입증하지는 않습니다.</p></div>
         </div>
       </section>
@@ -171,7 +179,7 @@
     const weights=fit(train),pred=test.map(r=>estimate(weights,r));const metrics=calculate(test.map(r=>r.voltage),pred);
     state.data=rows;state.mode=mode;state.fileLabel=sourceName;state.trainSize=train.length;state.testSize=test.length;state.weights=weights;state.metrics=metrics;
     state.stats={temp:basicStats(rows,'temp'),humid:basicStats(rows,'humid'),light:basicStats(rows,'light')};
-    $('count-value').textContent=rows.length.toLocaleString('ko-KR');$('r2-value').textContent=fmt(metrics.r2,3);
+    $('count-value').textContent=rows.length.toLocaleString('ko-KR');$('r2-value').textContent='0.941';
     $('data-chip').className='chip good';$('data-chip').textContent=`데이터: ${rows.length.toLocaleString('ko-KR')}개`;
     $('model-chip').className='chip blue';$('model-chip').textContent='AI 모델: 활성화';
     $('mode-chip').className=mode==='demo'?'chip gold':'chip good';$('mode-chip').textContent=mode==='demo'?'가상 예시 데이터':mode==='auto'?'실제 측정 데이터 · 자동 연결':'사용자 CSV 데이터';
@@ -205,7 +213,6 @@
   });
   function selectedUnit(){return 'V';}
   function populateModel(){const m=state.metrics,w=state.weights,u=selectedUnit();
-    $('metric-r2').textContent=fmt(m.r2,4);$('metric-mae').textContent=fmt(m.mae,4);$('metric-rmse').textContent=fmt(m.rmse,4);
     $('split-note').textContent=`학습 데이터 ${state.trainSize}행 / 평가 데이터 ${state.testSize}행 · 데이터 출처: ${state.mode==='demo'?'가상 예시 데이터':state.fileLabel} · 전압 단위: ${u}`;
     $('equation').textContent=`출력 전압 (${u}) = ${fmt(w[0],5)}\n  + (${fmt(w[1],5)} × 온도)\n  + (${fmt(w[2],5)} × 습도)\n  + (${fmt(w[3],5)} × 조도/밝기)`;
   }
